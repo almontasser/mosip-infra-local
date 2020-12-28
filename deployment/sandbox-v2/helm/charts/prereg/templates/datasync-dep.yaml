@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.datasync.serviceName }} 
+  namespace: {{ .Release.Namespace }} 
+  labels:
+    app: {{ .Values.services.datasync.serviceName }}
+    component: {{ .Values.component }} 
+    
+spec:
+  replicas: {{ .Values.services.datasync.podconfig.replicas }} 
+  selector:
+    matchLabels:
+      app: {{ .Values.services.datasync.serviceName }} 
+  minReadySeconds: {{ .Values.services.datasync.podconfig.minReadySeconds }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{ .Values.services.datasync.podconfig.maxUnavailable }}
+      maxSurge: {{ .Values.services.datasync.podconfig.maxSurge }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.services.datasync.serviceName }} 
+        component: {{ .Values.component }} 
+        exportLogs: {{ .Values.exportLogs }}
+    spec:
+      {{- include "dockerHubSecret" .  | indent 6}}
+      containers:
+      - name: {{ .Values.services.datasync.serviceName }} 
+        image: {{ .Values.services.datasync.dockerImage }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        env:
+        - name: active_profile_env
+          value: {{ .Values.activeProfileEnv }} 
+        - name: spring_config_label_env
+          value: {{ .Values.springConfigLabel }} 
+        - name: spring_config_url_env
+          value: {{ .Values.configServerUrl }} 
+        - name: artifactory_url_env
+          value: {{ .Values.artifactoryUrl }} 
+        - name: is_glowroot_env
+          value: {{ .Values.isGlowroot }}
+        - name: iam_adapter_url_env
+          value: {{ .Values.iamAdapterUrl }}
+        - name: mosipbox_public_url
+          value: {{ .Values.sitePublicUrl }}
+        ports:
+        - containerPort: {{ .Values.services.datasync.containerPort }}
+
+        {{- include "logger.mount" .  | indent 8}}
+
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.services.datasync.healthUrl }} 
+            port: {{ .Values.services.datasync.containerPort }} 
+          initialDelaySeconds: {{ .Values.probe.initialDelay }} 
+          periodSeconds: {{ .Values.probe.period }} 
+  #      livenessProbe:
+  #        httpGet:
+  #          path: {{ .Values.services.datasync.healthUrl }} 
+  #          port: {{ .Values.services.datasync.containerPort }} 
+  #       initialDelaySeconds: {{ .Values.probe.initialDelay }} 
+  #        periodSeconds: {{ .Values.probe.period }} 
+  #
+      {{- include "logger.sidecar" .  | indent 6}}
+
+      {{- include "logger.volume" .  | indent 6}}

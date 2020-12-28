@@ -1,0 +1,3 @@
+id,name,contact,address,email,type,policy_group
+mpartner-default-auth,Mpartner Default Auth,955679989,hyderabad,partauth0@xyz.com,Online_Verification_Partner,auth_module_policy_group
+mpartner-default-abis,Mpartner Default Abis,955679989,Bangalore,abis@xyz.com,ABIS_Partner,abis_policy_group

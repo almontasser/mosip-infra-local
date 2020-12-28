@@ -1,0 +1,14 @@
+name: activemq
+docker:
+  image: mosipdev/activemq:5.15.9
+  containerPort: 61616
+  nodeport: 30616
+  min-memory: 512
+  max-memory: 2048
+  storeusage: 2 gb
+  tempusage: 1 gb
+  webPort: 8161
+  servicePort: 80
+services:
+  activemq:
+    podconfig: {{ podconfig.activemq.service | to_yaml }}

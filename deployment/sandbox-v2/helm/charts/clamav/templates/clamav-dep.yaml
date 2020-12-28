@@ -1,0 +1,32 @@
+---
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: {{  .Values.name }}
+  namespace: {{ .Release.Namespace }} 
+spec:
+  replicas: {{ .Values.services.clamav.podconfig.replicas }} 
+  selector:
+    matchLabels:
+      app: {{ .Values.name }} 
+  minReadySeconds: {{ .Values.services.clamav.podconfig.minReadySeconds }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{ .Values.services.clamav.podconfig.maxUnavailable }}
+      maxSurge: {{ .Values.services.clamav.podconfig.maxSurge }} 
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }} 
+    spec:
+      containers:
+      - name: {{  .Values.name }}
+        image: {{ .Values.docker.image }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        ports:
+        - containerPort: {{ .Values.docker.containerPort }}
+        readinessProbe:
+          tcpSocket:
+            port: {{  .Values.docker.containerPort }}
+

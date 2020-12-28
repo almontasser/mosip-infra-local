@@ -1,0 +1,36 @@
+name: {{ postgres.internal_host }}
+port: {{ postgres.internal_port }}
+user: {{ postgres.user }} 
+password: '' # To be passed directly with helm command
+nfs:  # Must match nfs server params defined via Ansible
+  server: {{ nfs.server }} 
+  path: {{ postgres.nfs_path }}
+pvc:
+  name: postgres-pvc
+  size: {{ postgres.size }}
+pv:
+  name: postgres-pv
+  size: {{ postgres.size }}
+sc: 
+  name: ""
+
+resources:
+  requests:
+    memory: 512Mi 
+    cpu: 250m 
+docker:
+  image: postgres
+  tag: 12.2
+  containerPort: 5432
+nodePort: {{ postgres.port }}
+maxConnections: {{ postgres.max_connections }} 
+nodeAffinity:
+  enabled: {{ postgres.node_affinity.enabled }}
+  node: {{ postgres.node_affinity.node }}
+  taint:
+    key: {{ postgres.node_affinity.taint.key }}
+    value: {{ postgres.node_affinity.taint.value }}
+
+services:
+  postgres:
+    podconfig: {{ podconfig.postgres.service | to_yaml }}

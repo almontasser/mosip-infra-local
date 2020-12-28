@@ -1,0 +1,34 @@
+serviceName: softhsm-{{hsm_prop.label}}
+
+activeProfileEnv: mz 
+springConfigLabel: {{ config_repo.version }} 
+configServerUrl: {{ config_server.internal_url }}`
+artifactoryUrl: {{ artifactory_url }} 
+
+docker:
+  image: mosipdev/softhsm
+  tag: v1
+  ports:
+    containerPort: 5666
+    servicePort: 80
+
+confFile: {{hsm_prop.conf_file}}
+mountPath: /softhsm  # path inside docker
+
+sc:
+  name: ""
+pv:
+  name: softhsm-{{hsm_prop.label}}-pv
+  size: 20Mi
+pvc:
+  name: softhsm-{{hsm_prop.label}}-pvc
+  size: 20Mi 
+
+nfs:
+  server: {{ nfs.server }} 
+  path: {{hsm_prop.nfs_path}}
+
+probe:
+  initialDelay: 15  # Seconds
+  period: 30 # Seconds
+healthUrl: ''

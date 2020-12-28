@@ -1,0 +1,35 @@
+# Playbook to run CoreDNS server on console and configure /etc/resolv.conf
+# on all machines to point to this DNS.
+# Run these only if coredns is enabled.
+- hosts: console
+  gather_facts: true
+  roles: 
+      - {role: coredns, when: coredns.enabled == true} 
+
+# Update resolv.conf file on all machines
+- hosts: all
+  gather_facts: false
+  tasks:
+   - name: Backup resolv file
+     copy:
+       src: '/etc/resolv.conf'
+       dest: '/etc/resolv.conf.bak'
+       force: false
+     become: yes
+
+   - name: Replace resolv file
+     template:
+       src: '{{install_root}}/roles/coredns/templates/resolv.conf.j2'
+       dest: /etc/resolv.conf
+     when: coredns.enabled == true
+     become: yes
+
+## Append 8.8.8.8 to console file 
+- hosts: console
+  gather_facts: false
+  tasks:
+   - name: Append public name server to console resolv.conf
+     lineinfile:
+       path: /etc/resolv.conf
+       line: 'nameserver 8.8.8.8'
+     become: yes

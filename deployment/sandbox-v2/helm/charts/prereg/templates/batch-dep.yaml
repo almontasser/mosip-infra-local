@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.batch.serviceName }} 
+  namespace: {{ .Release.Namespace }} 
+  labels:
+    app: {{ .Values.services.batch.serviceName }}
+    component: {{ .Values.component }} 
+    
+spec:
+  replicas: {{ .Values.services.batch.podconfig.replicas }} 
+  selector:
+    matchLabels:
+      app: {{ .Values.services.batch.serviceName }} 
+  minReadySeconds: {{ .Values.services.batch.podconfig.minReadySeconds }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{ .Values.services.batch.podconfig.maxUnavailable }}
+      maxSurge: {{ .Values.services.batch.podconfig.maxSurge }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.services.batch.serviceName }} 
+        component: {{ .Values.component }} 
+        exportLogs: {{ .Values.exportLogs }}
+    spec:
+      {{- include "dockerHubSecret" .  | indent 6}}
+      containers:
+      - name: {{ .Values.services.batch.serviceName }} 
+        image: {{ .Values.services.batch.dockerImage }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        env:
+        - name: active_profile_env
+          value: {{ .Values.activeProfileEnv }} 
+        - name: spring_config_label_env
+          value: {{ .Values.springConfigLabel }} 
+        - name: spring_config_url_env
+          value: {{ .Values.configServerUrl }} 
+        - name: artifactory_url_env
+          value: {{ .Values.artifactoryUrl }} 
+        - name: is_glowroot_env
+          value: {{ .Values.isGlowroot }}
+        ports:
+        - containerPort: {{ .Values.services.batch.containerPort }}
+
+        {{- include "logger.mount" .  | indent 8}}
+
+        readinessProbe:  #TODO: Since no actuator, we watch tcp port. Is there an actuator?
+          tcpSocket:
+            port: {{ .Values.services.batch.containerPort }}
+          initialDelaySeconds: {{ .Values.probe.initialDelay }} 
+          periodSeconds: {{ .Values.probe.period }} 
+   #     livenessProbe:
+   #       tcpSocket:
+   #         port: {{ .Values.services.batch.containerPort }}
+   #       initialDelaySeconds: {{ .Values.probe.initialDelay }} 
+   #       periodSeconds: {{ .Values.probe.period }} 
+   #
+      {{- include "logger.sidecar" .  | indent 6}}
+
+      {{- include "logger.volume" .  | indent 6}}

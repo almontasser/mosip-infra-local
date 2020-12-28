@@ -1,0 +1,9 @@
+name: clamav
+docker:
+  image: mkodockx/docker-clamav:latest
+  containerPort: 3310
+imagePullPolicy: IfNotPresent
+
+services:
+  clamav:
+    podconfig: {{ podconfig.clamav.service | to_yaml }}

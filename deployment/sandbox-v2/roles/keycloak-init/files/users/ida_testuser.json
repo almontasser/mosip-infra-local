@@ -1,0 +1,19 @@
+{
+    "username": "ida_testuser",
+    "enabled": true,
+    "email": "ida_testuser@xyz.com",
+    "emailVerified": false,
+    "firstName": "Test_ida_testuser",
+    "lastName": "Auto_ida_testuser",
+    "credentials": [
+        {
+            "type": "password",
+            "value": "mosip",
+            "temporary": false
+        }
+    ],
+    "attributes": {
+      "userPassword": "e1NTSEEyNTZ9NTBhMTFPNTRDMWdqM3kzZUd3VjRLSjZJL0s0NG9VbmozMmRPbE1mZEF1ajd4MGhjR2pVT1RnPT0="
+    }
+}
+

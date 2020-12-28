@@ -1,0 +1,35 @@
+---
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: {{ .Values.services.serviceName }}
+  namespace: {{ .Release.Namespace }} 
+spec:
+  replicas: {{ .Values.services.podconfig.replicas }}  
+  selector:
+    matchLabels:
+      app: {{ .Values.services.serviceName }}
+  minReadySeconds: {{ .Values.services.podconfig.minReadySeconds }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{ .Values.services.podconfig.maxUnavailable }}
+      maxSurge: {{ .Values.services.podconfig.maxSurge }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.services.serviceName }} 
+    spec:
+      containers:
+      - name: {{ .Values.services.serviceName }}
+        image: {{ .Values.services.dockerImage }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        env:
+        - name: hub_datasource_url_env
+          value: {{ .Values.hub.datasource_url }}
+        - name: hub_datasource_username_env
+          value: {{ .Values.hub.datasource_username }}
+        - name: hub_datasource_password_env
+          value: {{ .Values.hub.datasource_password }}
+        ports:
+        - containerPort: {{ .Values.hub.port }} 

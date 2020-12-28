@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.prid.serviceName }} 
+  namespace: {{ .Release.Namespace }} 
+  labels:
+    app: {{ .Values.services.prid.serviceName }}
+    component: {{ .Values.component }} 
+    
+spec:
+  replicas: {{ .Values.services.prid.podconfig.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.services.prid.serviceName }} 
+  minReadySeconds: {{ .Values.services.prid.podconfig.minReadySeconds }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{ .Values.services.prid.podconfig.maxUnavailable }}
+      maxSurge: {{ .Values.services.prid.podconfig.maxSurge }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.services.prid.serviceName }} 
+        component: {{ .Values.component }} 
+        exportLogs: {{ .Values.exportLogs }}
+    spec:
+      {{- include "dockerHubSecret" .  | indent 6}}
+      containers:
+      - name: {{ .Values.services.prid.serviceName }} 
+        image: {{ .Values.services.prid.dockerImage }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        env:
+#        # TODO: Correct docker - we have to write variables names explicitly
+        - name: active_profile_env
+          value: {{ .Values.activeProfileEnv }} 
+        - name: spring_config_label_env
+          value: {{ .Values.springConfigLabel }} 
+        - name: spring_config_url_env
+          value: {{ .Values.configServerUrl }} 
+        - name: artifactory_url_env
+          value: {{ .Values.artifactoryUrl }} 
+        - name: is_glowroot_env
+          value: {{ .Values.isGlowroot }} 
+        ports:
+        - containerPort: {{ .Values.services.prid.containerPort }}
+        readinessProbe:  #TODO: Since no actuator, we watch tcp port. Is there an actuator?
+          tcpSocket:
+            port: {{ .Values.services.prid.containerPort }}
+          initialDelaySeconds: {{ .Values.probe.initialDelay }} 
+          periodSeconds: {{ .Values.probe.period }} 
+#        livenessProbe:
+#          tcpSocket:
+#            port: {{ .Values.services.prid.containerPort }}
+#          initialDelaySeconds: {{ .Values.probe.initialDelay }} 
+#          periodSeconds: {{ .Values.probe.period }} 

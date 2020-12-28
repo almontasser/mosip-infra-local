@@ -1,0 +1,32 @@
+---
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: {{  .Values.docker.service }}
+  namespace: {{ .Release.Namespace }} 
+spec:
+  replicas: {{ .Values.services.artifactory.podconfig.replicas }} 
+  selector:
+    matchLabels:
+      app: {{ .Values.docker.service }} 
+  minReadySeconds: {{ .Values.services.artifactory.podconfig.minReadySeconds }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{ .Values.services.artifactory.podconfig.maxUnavailable }}
+      maxSurge: {{ .Values.services.artifactory.podconfig.maxSurge }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.docker.service }} 
+    spec:
+      containers:
+      - name: {{  .Values.docker.service }}
+        image: {{ .Values.docker.image }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        ports:
+        - containerPort: {{ .Values.docker.containerPort }}
+        readinessProbe:
+          tcpSocket:
+            port: {{  .Values.docker.containerPort }}
+

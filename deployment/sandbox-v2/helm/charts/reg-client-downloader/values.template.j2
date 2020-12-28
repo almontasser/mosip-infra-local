@@ -1,0 +1,43 @@
+serviceName: reg-client-downloader
+
+activeProfileEnv: dmz 
+springConfigLabel: {{ config_repo.version }} 
+configServerUrl: {{ config_server.internal_url }}
+artifactoryUrl: {{ artifactory_url }} 
+imagePullPolicy: Always
+docker:
+  image: {{ versions.services.registration_client.downloader.values()[0] }}
+  ports:
+    containerPort: 80
+    servicePort: 80
+
+version: {{ versions.services.registration_client.version }}
+mountPath: "/build_files"  # path inside docker
+crypto_key_env: {{ reg_client.crypto_key }}
+bootpwd: {{ reg_client.bootpwd }}
+tpm: "N"
+certificate: "mosip_cer.cer"
+upgrade_server: {{ site.sandbox_public_url }}
+healthcheck: "{{ site.sandbox_public_url }}/vi/authmanager/actuator/health"
+
+sc:
+  name: ""
+pv:
+  name: reg-client-downloader
+  size: 2Mi
+pvc:
+  name: reg-client-downloader
+  size: 2Mi 
+
+nfs:
+  server: {{ nfs.server }} 
+  path: {{ reg_client.nfs_path }}
+
+probe:
+  initialDelay: 15  # Seconds
+  period: 30 # Seconds
+healthUrl: ''
+
+services:
+  reg_client_downloader:
+    podconfig: {{ podconfig.reg_client_downloader.service | to_yaml }}

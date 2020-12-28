@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.bioextractor.serviceName }} 
+  namespace: {{ .Release.Namespace }} 
+  labels:
+    app: {{ .Values.services.bioextractor.serviceName }}
+    component: {{ .Values.component }} 
+    
+spec:
+  replicas: {{ .Values.services.bioextractor.podconfig.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.services.bioextractor.serviceName }} 
+  minReadySeconds: {{ .Values.services.bioextractor.podconfig.minReadySeconds }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{ .Values.services.bioextractor.podconfig.maxUnavailable }}
+      maxSurge: {{ .Values.services.bioextractor.podconfig.maxSurge }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.services.bioextractor.serviceName }} 
+        component: {{ .Values.component }} 
+        exportLogs: {{ .Values.exportLogs }}
+    spec:
+      {{- include "dockerHubSecret" .  | indent 6}}
+      containers:
+      - name: {{ .Values.services.bioextractor.serviceName }} 
+        image: {{ .Values.services.bioextractor.dockerImage }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        env:
+        - name: active_profile_env
+          value: {{ .Values.activeProfileEnv }} 
+        - name: spring_config_label_env
+          value: {{ .Values.springConfigLabel }} 
+        - name: spring_config_url_env
+          value: {{ .Values.configServerUrl }} 
+        - name: artifactory_url_env
+          value: {{ .Values.artifactoryUrl }} 
+        - name: is_glowroot_env
+          value: {{ .Values.isGlowroot }}
+        - name: extraction_format_env
+          value: {{ .Values.extraction_format }}
+        - name: iam_adapter_url_env
+          value: {{ .Values.iamAdapterUrl }}
+        - name: mosip_biosdk_service
+          value: {{ .Values.biosdkServiceUrl }}
+        ports:
+        - containerPort: {{ .Values.services.bioextractor.containerPort }}
+
+        {{- include "logger.mount" .  | indent 8}}
+
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.services.bioextractor.healthUrl }} 
+            port: {{ .Values.services.bioextractor.containerPort }} 
+          initialDelaySeconds: {{ .Values.probe.initialDelay }} 
+          periodSeconds: {{ .Values.probe.period }} 
+ #       livenessProbe:
+ #         httpGet:
+ #           path: {{ .Values.services.bioextractor.healthUrl }} 
+ #           port: {{ .Values.services.bioextractor.containerPort }} 
+ #         initialDelaySeconds: {{ .Values.probe.initialDelay }} 
+ #         periodSeconds: {{ .Values.probe.period }}
+ #
+      {{- include "logger.sidecar" .  | indent 6}}
+
+      {{- include "logger.volume" .  | indent 6}}

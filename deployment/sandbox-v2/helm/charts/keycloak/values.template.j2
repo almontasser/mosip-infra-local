@@ -1,0 +1,22 @@
+name: keycloak
+dockerImage: jboss/keycloak
+dockerTag: 9.0.0 
+keycloakUser: {{ keycloak.user }}
+keycloakPassword: '' # To be passed directly with helm command
+domain: {{ sandbox_domain_name }}
+internalDomain: {{ clusters.mz.nodeport_node }} 
+keycloakExternalUrl: "https://{{ sandbox_domain_name }}/keycloak/auth/"  
+containerPort: 8080
+servicePort: 80
+db:
+  name: {{ keycloak.db.name }}
+  host: {{ keycloak.db.host }}
+  port: {{ keycloak.db.port }}
+  user: {{ keycloak.db.user }}
+  password: ''  # Passed from helm directly 
+ingress:
+   namespace: default
+
+services:
+  keycloak:
+    podconfig: {{ podconfig.keycloak.service | to_yaml }} 

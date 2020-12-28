@@ -1,0 +1,8 @@
+# Install and init postgres
+#
+
+- import_playbook: postgres-install.yml
+  when: postgres.external == false
+
+- import_playbook: postgres-init.yml
+

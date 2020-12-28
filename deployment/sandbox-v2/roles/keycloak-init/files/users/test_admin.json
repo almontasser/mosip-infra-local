@@ -1,0 +1,19 @@
+{
+    "username": "test_admin",
+    "enabled": true,
+    "email": "test_admin@xyz.com",
+    "emailVerified": false,
+    "firstName": "Test",
+    "lastName": "Auto",
+    "credentials": [
+        {
+            "type": "password",
+            "value": "mosip",
+            "temporary": false
+        }
+    ],
+    "attributes": {
+      "userPassword": "e1NTSEEyNTZ9NTBhMTFPNTRDMWdqM3kzZUd3VjRLSjZJL0s0NG9VbmozMmRPbE1mZEF1ajd4MGhjR2pVT1RnPT0="
+    }
+}
+

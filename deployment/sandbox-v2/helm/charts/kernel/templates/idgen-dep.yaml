@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.idgen.serviceName }} 
+  namespace: {{ .Release.Namespace }} 
+  labels:
+    app: {{ .Values.services.idgen.serviceName }}
+    component: {{ .Values.component }} 
+    
+spec:
+  replicas: {{ .Values.services.idgen.podconfig.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.services.idgen.serviceName }} 
+  minReadySeconds: {{ .Values.services.idgen.podconfig.minReadySeconds }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{ .Values.services.idgen.podconfig.maxUnavailable }}
+      maxSurge: {{ .Values.services.idgen.podconfig.maxSurge }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.services.idgen.serviceName }} 
+        component: {{ .Values.component }} 
+        exportLogs: {{ .Values.exportLogs }}
+    spec:
+      {{- include "dockerHubSecret" .  | indent 6}}
+      containers:
+      - name: {{ .Values.services.idgen.serviceName }} 
+        image: {{ .Values.services.idgen.dockerImage }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        env:
+        - name: active_profile_env
+          value: {{ .Values.activeProfileEnv }} 
+        - name: spring_config_label_env
+          value: {{ .Values.springConfigLabel }} 
+        - name: spring_config_url_env
+          value: {{ .Values.configServerUrl }} 
+        - name: artifactory_url_env
+          value: {{ .Values.artifactoryUrl }} 
+        - name: is_glowroot_env
+          value: {{ .Values.isGlowroot }} 
+        ports:
+        - containerPort: {{ .Values.services.idgen.containerPort }}
+#        readinessProbe:  #TODO: Disabled as not sure how long this takes. Enable them carefully.
+#          tcpSocket:
+#            port: {{ .Values.services.idgen.containerPort }}
+#          initialDelaySeconds: {{ .Values.probe.initialDelay }} 
+#          periodSeconds: {{ .Values.probe.period }} 
+#        livenessProbe:
+#          tcpSocket:
+#            port: {{ .Values.services.idgen.containerPort }}
+#          initialDelaySeconds: {{ .Values.probe.initialDelay }} 
+#          periodSeconds: {{ .Values.probe.period }} 

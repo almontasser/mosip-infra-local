@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.datashare.serviceName }} 
+  namespace: {{ .Release.Namespace }} 
+  labels:
+    app: {{ .Values.services.datashare.serviceName }}
+    component: {{ .Values.component }} 
+    
+spec:
+  replicas: {{ .Values.services.datashare.podconfig.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.services.datashare.serviceName }} 
+  minReadySeconds: {{ .Values.services.datashare.podconfig.minReadySeconds }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{ .Values.services.datashare.podconfig.maxUnavailable }}
+      maxSurge: {{ .Values.services.datashare.podconfig.maxSurge }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.services.datashare.serviceName }} 
+        component: {{ .Values.component }} 
+        exportLogs: {{ .Values.exportLogs }}
+    spec:
+      {{- include "dockerHubSecret" .  | indent 6}}
+      containers:
+      - name: {{ .Values.services.datashare.serviceName }} 
+        image: {{ .Values.services.datashare.dockerImage }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        env:
+        - name: active_profile_env
+          value: {{ .Values.activeProfileEnv }} 
+        - name: spring_config_label_env
+          value: {{ .Values.springConfigLabel }} 
+        - name: spring_config_url_env
+          value: {{ .Values.configServerUrl }} 
+        - name: artifactory_url_env
+          value: {{ .Values.artifactoryUrl }} 
+        - name: is_glowroot_env
+          value: {{ .Values.isGlowroot }} 
+        ports:
+        - containerPort: {{ .Values.services.datashare.containerPort }}
+
+        {{- include "logger.mount" .  | indent 8}}
+
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.services.datashare.healthUrl }} 
+            port: {{ .Values.services.datashare.containerPort }} 
+          initialDelaySeconds: {{ .Values.probe.initialDelay }} 
+          periodSeconds: {{ .Values.probe.period }} 
+  #      livenessProbe:
+  #        httpGet:
+  #          path: {{ .Values.services.datashare.healthUrl }} 
+  #          port: {{ .Values.services.datashare.containerPort }} 
+  #        initialDelaySeconds: {{ .Values.probe.initialDelay }} 
+  #        periodSeconds: {{ .Values.probe.period }}
+  #
+      {{- include "logger.sidecar" .  | indent 6}}
+
+      {{- include "logger.volume" .  | indent 6}}
